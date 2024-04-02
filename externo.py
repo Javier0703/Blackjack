@@ -13,7 +13,7 @@ class CartaBase(object):
 
     @property
     def valor(self):
-        #Valor de la carta. Devuelve 1 el 
+        #Valor de la carta. Devuelve 1 el AS
         return min(10, self.ind % 13 + 1)
 
 
