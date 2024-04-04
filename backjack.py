@@ -31,8 +31,10 @@ class Mano():
       self.nombre = nombre
       self.estado = 'Activa'
       self.apuesta = apuesta
-      self.valorCartas = self.getCardValues()
-      self.sumaCartas = self.sumaTotal()
+      self.valorCartas = self.getCardValues()   #Lista con la lista de cartas
+      self.sumaCartas = self.sumaTotal()        #Valor de la mano
+      #Comprobamos el numero para modificar o no el estado (Modificaciones del profesor)
+      self.comprobarSuma()
 
    #Funcion que devuelve el valor de las cartas de la mano (de la clase Carta)
    def getCardValues(self):
@@ -59,38 +61,53 @@ class Mano():
          n += val
       return n
    
-   """#Definimos la apuesta para las manos del jugador
-   def setApuesta(self, apuesta):
-      self.apuesta = apuesta"""
-
-   #Impresion de cartas: Manejo con lista para cada linea (concatenacion de manos)
+   def comprobarSuma(self):
+      if self.estado == 'Activa' and self.sumaCartas>21:
+         self.estado == 'PASADA'
    
-   def imprimirCroupier(self):
-      nombre = f"{self.nombre}"+":"
-      valor = f"({self.sumaCartas})"
-      if len(nombre)>len(self.estado):
-         estado =" "*(len(nombre)-len(self.estado))+f"{self.estado}"
-         l2Valor = " "*(len(nombre)-len(valor))+f"{valor}"
-         l4Espace = " "*len(nombre)
+   #Impresion de cartas: Manejo con lista para cada linea (concatenacion de manos)
+   #Damos Forma a las cartas
+   def formaCarta(self):
+      self.valorMano = f"({self.sumaCartas})"
+      self.apuestaIcono = f"{self.apuesta}"+"€"
+      self.nombreTrans = f"{self.nombre}"+":"
+      #Comprobaciones
+      if len(self.nombreTrans)>=len(self.estado):
+         self.espaciado = " "*len(self.nombreTrans)
+         self.valorMano = " "*(len(self.nombreTrans)-len(self.valorMano))+f"{self.valorMano}"
+         self.apuestaIcono = " "*(len(self.nombreTrans)-len(self.apuestaIcono))+f"{self.apuestaIcono}"
+         self.estado = " "*(len(self.nombreTrans)-len(self.estado))+f"{self.estado}"
       else:
-         estado = self.estado
-         nombre =" "*(len(self.estado)-len(nombre))+f"{nombre}"
-         l2Valor = " "*(len(estado)-len(valor))+f"{valor}"
-         l4Espace = " "*len(self.estado)
+         self.espaciado = " "*len(self.estado)
+         self.valorMano = " "*(len(self.estado)-len(self.valorMano))+f"{self.valorMano}"
+         self.apuestaIcono = " "*(len(self.estado)-len(self.apuestaIcono))+f"{self.apuestaIcono}"
+         self.nombreTrans = " "*(len(self.estado)-len(self.nombreTrans))+f"{self.nombreTrans}"
 
+      #Aqui damos la forma a la propia carta (o cartas)
       numCartas = len(self.valorCartas)
-      self.l1 = f"{nombre}"+("╭───╮"*numCartas)
-      self.l2 = l2Valor
-      self.l3 = estado
+      self.l1 = ("╭───╮"*numCartas)
+      self.l2, self.l3 = "",""
       for i in range(len(self.valorCartas)):
          self.l2 +="│"+(" "*(3-len(self.valorCartas[i][1])))+f"{self.valorCartas[i][1]}"+"│"
          self.l3 +="│"+f"{self.valorCartas[i][2]}  "+"│"
-      self.l4 = f"{l4Espace}"+("╰───╯"*numCartas)
-      return [self.l1,self.l2,self.l3,self.l4]
+      self.l4 = ("╰───╯"*numCartas)
 
-     
+   #cartas Coupier
+   def imprimirCoupier(self):
+      self.formaCarta()
+      line1 = self.nombreTrans+self.l1 
+      line2 = self.valorMano+self.l2
+      line3 = self.estado+self.l3
+      line4 = self.espaciado+self.l4
+      return [line1,line2,line3,line4]
 
-
+   def imprimirJugador(self):
+      self.formaCarta()
+      line1 = self.nombreTrans+self.l1 
+      line2 = self.valorMano+self.l2
+      line3 = self.apuestaIcono+self.l3
+      line4 = self.estado+self.l4
+      return [line1,line2,line3,line4]
 #Main
 
 def main():
@@ -162,7 +179,7 @@ def main():
          for _ in range(cartasPorMano):
             for i in range(len(Croupier)):
                Croupier[i].append(mazo.reparte())
-         l = Mano(Croupier[0],'Croupier',apuesta).imprimirCroupier()
+         l = Mano(Croupier[0],'Croupier',apuesta).imprimirCoupier()
          print(l[0])
          print(l[1])
          print(l[2])
@@ -175,7 +192,7 @@ def main():
          for _ in range(cartasPorMano):
             for i in range(len(Jugador)):
                Jugador[i].append(mazo.reparte())
-         l = Mano(Jugador[0],'Mano',apuesta).imprimirCroupier()
+         l = Mano(Jugador[0],'Mano',apuesta).imprimirJugador()
          print(l[0])
          print(l[1])
          print(l[2])
