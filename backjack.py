@@ -18,7 +18,7 @@ class Carta(CartaBase):
       palos = ["♠","♣","♥","♦"]
       #Indice --> Indice de la carta (1-13)
       indice = (self.ind%numCartasPorPalo)+1
-      #num --> Indice de la carta (A,2,4,10,J,K...)
+      #num --> Numero/Letra de la carta (A,2,4,10,J,K...)
       if indice == 1:
          num = "A"
       elif indice == 11:
@@ -37,29 +37,33 @@ class Carta(CartaBase):
       return [self.valor,num,palo]
 
 class Mano():
-   def __init__(self,datos,indice,name,apuesta):
-      self.apuesta = apuesta
-      self.name = name
-      self.estado = "Activa"
+   def __init__(self,datos,nombre,apuesta):
+      #Datos necesarios de la mano: Cartas para el manejo de ellas
       self.datos = datos
-      self.indice = indice
+      self.nombre = nombre
+      self.estado = 'Activa'
+      self.apuesta = apuesta
       self.valorCartas = self.getCardValues()
       self.sumaCartas = self.sumaTotal()
 
+   #Funcion que devuelve el valor de las cartas de la mano (de la clase Carta)
    def getCardValues(self):
       cartasPorMano = []
       for dato in self.datos:
          cartasPorMano.append(dato.values())      
       return cartasPorMano
    
+   #Funcion que devuelve el valor de la mano completa y
    def sumaTotal(self):
       maxValue = 21
-      val = 10
       card = 'A'
+      val = 10
       cartaAS = False
       n = 0
       for carta in self.valorCartas:
+         #Sumamos el valor de la carta
          n += carta[0]
+         #Comprobamos si la carta es un AS
          if carta[1] == card:
             cartaAS = True
       #Comprobamos si es mejor opcion sumar 11 en vez de 1
@@ -67,7 +71,33 @@ class Mano():
          n += val
       return n
    
-   def printMano(self):
+   """#Definimos la apuesta para las manos del jugador
+   def setApuesta(self, apuesta):
+      self.apuesta = apuesta"""
+
+   #Impresion de cartas: Manejo con lista para cada linea (concatenacion de manos)
+   
+   def imprimirCroupier(self):
+      nombre = f"{self.nombre}"+":"
+      valor = f"({self.sumaCartas})"
+      if len(nombre)>len(self.estado):
+         estado =" "*(len(nombre)-len(self.estado))+f"{self.estado}"
+         l2Valor = " "*(len(nombre)-len(valor))+f"{valor}"
+         l4Espace = " "*len(nombre)
+      else:
+         estado = self.estado
+         nombre =" "*(len(self.estado)-len(nombre))+f"{nombre}"
+         l2Valor = " "*(len(estado)-len(valor))+f"{valor}"
+         l4Espace = " "*len(self.estado)
+
+      numCartas = len(self.valorCartas)
+      self.l1 = f"{nombre}"+("╭───╮"*numCartas)
+      self.l2 = l2Valor
+      self.l3= f"{estado}"+"│"+f"{self.valorCartas[0][2]}  "+"│"
+      self.l4 = f"{l4Espace}"+("╰───╯"*numCartas)
+      return [self.l1,self.l2,self.l3,self.l4]
+
+     
 
 
 #Main
@@ -109,6 +139,7 @@ def main():
 
          while True:
             apIncorrecta = "Apuesta seleccionada incorrecta"
+            #Aqui selecciona la apuesta
             apuesta = input(msg)
             if apuesta.isdigit():
                apuesta = int(apuesta)
@@ -122,24 +153,42 @@ def main():
          #Ya tenemos apuesta:
          print("REPARTO INICIAL")
 
-         #Se le genera una mano tanto al Coupier como al jugador
-      
-         #Variable donde guarda el numero de cartas del copier 
-         cartsInitCoupier = 1
-         Coupier = []
-         for _ in range(cartsInitCoupier):
-            Coupier.append(mazo.reparte())
+         #Se le genera una(s) mano(s) tanto al Croupier como al jugador
+         #Inicialmente son 2 
+         """
+         La metodología empleada es la siguiente:
+            - cartasPorMano : Numero de cartas por cada mano
+            - Copier/Jugador: Lista con las diferentes manos iniciales 
+            (supuesto caso que se pidan jugar con 2 o lo que sea)
+            - manoCroupier, manoJugador : Lista con objetos tipo Mano, para su impresion
+            Bucle donde se almacenan las cartas en las manos
+         """
 
-         #Lista con listas de cartas (manos) que tiene el jugador
-         cartsInitJugador = 2
-         ManoJugador = [[]]
-         for _ in range(cartsInitJugador):
-            ManoJugador[0].append(mazo.reparte())
+         #Croupier
+         cartasPorMano = 1
+         #El numero de Listas dentro de la lista define las manos que hay
+         Croupier, manoCroupier = [[]], [[]]
+         for _ in range(cartasPorMano):
+            for i in range(len(Croupier)):
+               Croupier[i].append(mazo.reparte())
+         l = Mano(Croupier[0],'Croupier',apuesta).imprimirCroupier()
+         print(l[0])
+         print(l[1])
+         print(l[2])
+         print(l[3])
 
-         print((Mano(ManoJugador[0],0,"Mano")).valorCartas)
-         print((Mano(ManoJugador[0],0,"Mano")).sumaCartas)
-         
-
+         #Usuario
+         cartasPorMano = 2
+         #El numero de Listas dentro de la lista define las manos que hay
+         Jugador,manoJugador = [[]], [[]]
+         for _ in range(cartasPorMano):
+            for i in range(len(Jugador)):
+               Jugador[i].append(mazo.reparte())
+         l = Mano(Jugador[0],'Mano',apuesta).imprimirCroupier()
+         print(l[0])
+         print(l[1])
+         print(l[2])
+         print(l[3])
          break
 
 
