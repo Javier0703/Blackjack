@@ -16,23 +16,11 @@ class Carta(CartaBase):
    def values(self):
       numCartasPorPalo = 13
       palos = ["♠","♣","♥","♦"]
-      #Indice --> Indice de la carta (1-13)
-      indice = (self.ind%numCartasPorPalo)+1
-      #num --> Numero/Letra de la carta (A,2,4,10,J,K...)
-      if indice == 1:
-         num = "A"
-      elif indice == 11:
-        num = "J"
-      elif indice == 12:
-        num = "Q"
-      elif indice == 13:
-        num = "K"
-      else:
-        num = str(indice)
-
+      figuras = ['A',2,3,4,5,6,7,8,9,10,'J','Q','K']
+      #Num --> Indice de la carta (A-K)
+      num = str(figuras[self.ind%numCartasPorPalo])
       #Palo de la carta
-      palo = palos[self.ind//numCartasPorPalo]
-
+      palo = palos[self.ind//len(figuras)]
       #Lista con los detalles de la carta [Valor, Indice, Palo]
       return [self.valor,num,palo]
 
@@ -93,7 +81,10 @@ class Mano():
       numCartas = len(self.valorCartas)
       self.l1 = f"{nombre}"+("╭───╮"*numCartas)
       self.l2 = l2Valor
-      self.l3= f"{estado}"+"│"+f"{self.valorCartas[0][2]}  "+"│"
+      self.l3 = estado
+      for i in range(len(self.valorCartas)):
+         self.l2 +="│"+(" "*(3-len(self.valorCartas[i][1])))+f"{self.valorCartas[i][1]}"+"│"
+         self.l3 +="│"+f"{self.valorCartas[i][2]}  "+"│"
       self.l4 = f"{l4Espace}"+("╰───╯"*numCartas)
       return [self.l1,self.l2,self.l3,self.l4]
 
