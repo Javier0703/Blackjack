@@ -63,37 +63,35 @@ class Mano():
    
    def comprobarSuma(self):
       if self.estado == 'Activa' and self.sumaCartas>21:
-         self.estado == 'PASADA'
+         self.estado = 'PASADA'
    
    #Impresion de cartas: Manejo con lista para cada linea (concatenacion de manos)
    #Damos Forma a las cartas
    def formaCarta(self):
+      
+      #Modificaciones para la el print posterior
+      self.nombreTrans = f"{self.nombre}"+":"      
       self.valorMano = f"({self.sumaCartas})"
       self.apuestaIcono = f"{self.apuesta}"+"€"
-      self.nombreTrans = f"{self.nombre}"+":"
-      #Comprobaciones
-      if len(self.nombreTrans)>=len(self.estado):
-         self.espaciado = " "*len(self.nombreTrans)
-         self.valorMano = " "*(len(self.nombreTrans)-len(self.valorMano))+f"{self.valorMano}"
-         self.apuestaIcono = " "*(len(self.nombreTrans)-len(self.apuestaIcono))+f"{self.apuestaIcono}"
-         self.estado = " "*(len(self.nombreTrans)-len(self.estado))+f"{self.estado}"
-      else:
-         self.espaciado = " "*len(self.estado)
-         self.valorMano = " "*(len(self.estado)-len(self.valorMano))+f"{self.valorMano}"
-         self.apuestaIcono = " "*(len(self.estado)-len(self.apuestaIcono))+f"{self.apuestaIcono}"
-         self.nombreTrans = " "*(len(self.estado)-len(self.nombreTrans))+f"{self.nombreTrans}"
+      #Comprobacion del dato mas largo (para imprimirlo de manera deluxe)
+      maxi = max(len(self.nombreTrans), len(self.estado), len(self.apuestaIcono))
+      self.estado = self.estado.rjust(maxi)
+      self.nombreTrans = self.nombreTrans.rjust(maxi)
+      self.valorMano = self.valorMano.rjust(maxi)
+      self.apuestaIcono = self.apuestaIcono.rjust(maxi)
+      self.espaciado = " " * maxi
 
       #Aqui damos la forma a la propia carta (o cartas)
       numCartas = len(self.valorCartas)
-      self.l1 = ("╭───╮"*numCartas)
-      self.l2, self.l3 = "",""
+      self.l1 = "╭───╮" * numCartas
+      self.l2, self.l3 = "", ""
       for i in range(len(self.valorCartas)):
-         self.l2 +="│"+(" "*(3-len(self.valorCartas[i][1])))+f"{self.valorCartas[i][1]}"+"│"
-         self.l3 +="│"+f"{self.valorCartas[i][2]}  "+"│"
-      self.l4 = ("╰───╯"*numCartas)
+         self.l2 += "│" + (" " * (3 - len(self.valorCartas[i][1]))) + f"{self.valorCartas[i][1]}" + "│"
+         self.l3 += "│" + f"{self.valorCartas[i][2]}  " + "│"
+      self.l4 = "╰───╯" * numCartas
 
    #cartas Coupier
-   def imprimirCoupier(self):
+   def imprimirCroupier(self):
       self.formaCarta()
       line1 = self.nombreTrans+self.l1 
       line2 = self.valorMano+self.l2
@@ -108,6 +106,18 @@ class Mano():
       line3 = self.apuestaIcono+self.l3
       line4 = self.estado+self.l4
       return [line1,line2,line3,line4]
+   
+def imprimirManos(listas):
+    #Longitud de las manos (Debe ser 4)
+    maximo = max(len(sublista) for sublista in listas)
+    for i in range(maximo):
+        elementos = []
+        for sublista in listas:
+            elementos.append(str(sublista[i]))
+        #Cada elemento se separa con un " | "
+        print(" │ ".join(elementos))
+
+
 #Main
 
 def main():
@@ -168,35 +178,57 @@ def main():
             - cartasPorMano : Numero de cartas por cada mano
             - Copier/Jugador: Lista con las diferentes manos iniciales 
             (supuesto caso que se pidan jugar con 2 o lo que sea)
-            - manoCroupier, manoJugador : Lista con objetos tipo Mano, para su impresion
+            - manoCroupier, manoJugador : Lista con objetos tipo Mano, para su utilizacion
             Bucle donde se almacenan las cartas en las manos
          """
 
-         #Croupier
+         #Croupier --> Si las manos iniciales son mas de 1, el nombre es CropierA, CroupierB...
+         nombre = 'Croupier'
+         letter = 'A'
+         centinela = 0
          cartasPorMano = 1
-         #El numero de Listas dentro de la lista define las manos que hay
-         Croupier, manoCroupier = [[]], [[]]
-         for _ in range(cartasPorMano):
-            for i in range(len(Croupier)):
-               Croupier[i].append(mazo.reparte())
-         l = Mano(Croupier[0],'Croupier',apuesta).imprimirCoupier()
-         print(l[0])
-         print(l[1])
-         print(l[2])
-         print(l[3])
 
-         #Usuario
+         Croupier, manoCroupier,imprimirCroupier = [[]], [], []
+         for i in range(len(Croupier)):
+            for _ in range(cartasPorMano):
+               Croupier[i].append(mazo.reparte())
+         for element in Croupier:
+            if len(Croupier)>1:
+               tmpName = nombre+str(chr(ord(letter) + centinela))
+               centinela+=1
+               manoCroupier.append(Mano(element,tmpName,apuesta))
+            else:   
+               manoCroupier.append(Mano(element,nombre,apuesta))
+
+
+         #Usuario -->Si las manos iniciales son mas de 1, los nombres seran ManoA, ManoB ...
+         letter = 'A'
+         centinela = 0
          cartasPorMano = 2
-         #El numero de Listas dentro de la lista define las manos que hay
-         Jugador,manoJugador = [[]], [[]]
-         for _ in range(cartasPorMano):
-            for i in range(len(Jugador)):
+         nombre = 'Mano'
+        
+         Jugador,manoJugador,imprimirJugador = [[],[]], [], []
+         for i in range(len(Jugador)):
+            for _ in range(cartasPorMano):
                Jugador[i].append(mazo.reparte())
-         l = Mano(Jugador[0],'Mano',apuesta).imprimirJugador()
-         print(l[0])
-         print(l[1])
-         print(l[2])
-         print(l[3])
+         for element in Jugador:
+            if len(Jugador)>1:
+               tmpName = nombre+str(chr(ord(letter) + centinela))
+               centinela+=1
+               manoJugador.append(Mano(element,tmpName,apuesta))
+            else:   
+               manoJugador.append(Mano(element,nombre,apuesta))
+
+         #Aqui ya tenemos guardadas todas las manos en manoJugador y manoCroupier
+         #Son de tipo Mano, lo que transformamos las manos en formato carta para su impresion
+         for mano in manoCroupier:
+            imprimirCroupier.append(mano.imprimirCroupier())
+
+         for mano in manoJugador:
+            imprimirJugador.append(mano.imprimirJugador())
+         imprimirManos(imprimirCroupier)
+         imprimirManos(imprimirJugador)
+         
          break
 
 
