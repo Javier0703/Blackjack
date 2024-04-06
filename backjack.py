@@ -60,8 +60,11 @@ class Mano():
    
    def comprobarSuma(self):
       #Metodo para comprobar la suma de las cartas
-      if self.estado == 'Activa' and self.sumaCartas>21:
-         self.estado = 'PASADA'
+      if self.estado == 'Activa':
+         if self.sumaCartas > 21:
+            self.estado = 'PASADA'
+         if self.sumaCartas == 21:
+            self.estado = 'Cerrada'   
 
    def addCarta(self,cartaNueva):
       #Metodo de añadir una Carta nueva (Pedir/Doblar)
@@ -80,6 +83,13 @@ class Mano():
       self.sumaCartas = self.sumaTotal()
       self.comprobarSuma()       
    
+   def doblarApuesta(self):
+      #Metodo ejecutado cuando se dobla una apuesta
+      if self.sumaCartas >21:
+         self.estado = 'PASADA'
+      else:
+         self.estado = 'Cerrada'
+
    #Impresion de cartas: Manejo con lista para cada linea (concatenacion de manos)
    #Damos Forma a las cartas
    def formaCarta(self):
@@ -90,7 +100,7 @@ class Mano():
       self.apuestaIcono = f"{self.apuesta}"+"€"
       #Comprobacion del dato mas largo (para imprimirlo de manera deluxe alineadamente)
       maxi = max(len(self.nombreTrans), len(self.estado), len(self.apuestaIcono))
-      self.estado = self.estado.rjust(maxi)
+      self.estadoPrint = self.estado.rjust(maxi)
       self.nombreTrans = self.nombreTrans.rjust(maxi)
       self.valorMano = self.valorMano.rjust(maxi)
       self.apuestaIcono = self.apuestaIcono.rjust(maxi)
@@ -110,7 +120,7 @@ class Mano():
       self.formaCarta()
       line1 = self.nombreTrans+self.l1 
       line2 = self.valorMano+self.l2
-      line3 = self.estado+self.l3
+      line3 = self.estadoPrint+self.l3
       line4 = self.espaciado+self.l4
       return [line1,line2,line3,line4]
 
@@ -120,7 +130,7 @@ class Mano():
       line1 = self.nombreTrans+self.l1 
       line2 = self.valorMano+self.l2
       line3 = self.apuestaIcono+self.l3
-      line4 = self.estado+self.l4
+      line4 = self.estadoPrint+self.l4
       return [line1,line2,line3,line4]
 
 def transMano(mano,impresion,name):
@@ -147,8 +157,8 @@ def imprimirManos(listas):
 
 def comprobarManosActivas(manos):
    cent = 0
-   for mano in manos:
-      if mano.estado == 'Activa':
+   for m in manos:
+      if m.estado.replace(' ','') == 'Activa':
          cent +=1
    return cent      
 
@@ -296,8 +306,10 @@ def main():
          else:
             #No hay BlackJack se continua con el juego
             print("\nTURNO EL JUGADOR")
+
             #Comprobamos las manos activas
             manosActivas = comprobarManosActivas(manoJugador)
+
             while manosActivas>0:
                for i in range(len(manoJugador)):
                   #Comprobamos si el estado de esa mano está activa
@@ -318,25 +330,134 @@ def main():
                            break
 
                      #Accion seleccionada correctamente    
-                     #Accion de Cerrar:   
+                     #Accion de Cerrar -> Estado a Cerrada:   
                      if accion == 'C':
                         manoJugador[i].estado = 'Cerrada'
-                     
-                     #Accion de Pedir
-                     if accion == 'P':
+                      
+                     #Accion de Pedir o Doblar (Añadimos una carta)
+                     if accion == 'P' or accion == 'D':
                         manoJugador[i].addCarta(mazo.reparte())
                         #Actualizamos sus datos mediante el metodo
                         manoJugador[i].actualizarDatosMano()
 
+                     #Accion de Doblar  -> Doblamos apuesta
+                     if accion == 'D':
+                        manoJugador[i].apuesta += manoJugador[i].apuesta
+                        manoJugador[i].doblarApuesta()  
 
-                  #Imprimimos de nuevo las manos
 
-                  #Comprobamos las manos Activas de nuevo      
-                  manosActivas = comprobarManosActivas(manoJugador)
+                     #Accion de Separar: Sabemos que son dos cartas con el mismo valor nominal
+                     if accion == 'S':
+                        #Seleccionamos el nombe y la carta para introducirla
+                        name = manoJugador[i].nombre
+                        carta = [manoJugador[i].datos.pop()]
+                        #Modificamos el nombre de nuestra mano actual y actualizamos sus datos
+                        manoJugador[i].nombre = name+str('A')
+                        manoJugador[i].actualizarDatosMano()
+                        #Creamos una mano nueva y la actualizamos
+                        manoJugador.append(Mano(carta,(name+str('B')),manoJugador[i].apuesta))
+                        manoJugador[-1].actualizarDatosMano()
 
-            #Break de cierre de programa 
-            break
+               print(" ")
+               #Imprimimos de nuevo las manos
+               imprimirJugador = transMano(manoJugador,imprimirJugador,'Jugador')
+               imprimirManos(imprimirJugador)
+               #Comprobamos las manos Activas de nuevo    
+               manosActivas = comprobarManosActivas(manoJugador)
 
+            #Comprobamos si las manos son pasadas (Se finaliza el juego instantaniamente)
+            centinela = 0
+            for m in manoJugador:
+               if m.estado.upper() == 'ACTIVA' or m.estado.upper() == 'CERRADA':
+                  centinela +=1
+
+            if centinela !=0:
+               #Hay manos que no son pasadas
+               print("\nTURNO DEL CROUPIER")
+               #Bucle donde se le otorga una carta hasta que su valor de la mano sea mayor o igual a 17
+               for i in range(len(manoCroupier)):
+                  suma = manoCroupier[i].sumaCartas
+                  while suma<=17:
+                     manoCroupier[i].addCarta(mazo.reparte())
+                     manoCroupier[i].actualizarDatosMano()
+                     imprimirCroupier = transMano(manoCroupier,imprimirCroupier,'Croupier')
+                     imprimirManos(imprimirCroupier)
+                     suma = manoCroupier[i].sumaCartas
+                     if suma<=21 and suma>=17:
+                        manoCroupier[i].estado = 'Cerrada'
+                     if suma>21:
+                        manoCroupier[i].estado = 'PASADA'
+               
+               imprimirCroupier = transMano(manoCroupier,imprimirCroupier,'Croupier')
+
+            #Aqui ha finalizado el Juego. --> Imprimimos los datos finales      
+            print("\nFIN DE LA PARTIDA")
+            #Todas las manos han sido pasadas -> Se finaliza el juego
+            imprimirManos(imprimirCroupier)
+            imprimirManos(imprimirJugador)
+
+            #Contabilizacion de las manos
+            print("\nCONTABILIZACION DE RESULTADOS")
+            balanceTotal = 0 
+            for c in range(len(manoCroupier)):
+               for j in range(len(manoJugador)):
+                  cent = 0
+                  cent +=1 if manoCroupier[c].sumaCartas > 21 else 0
+                  cent +=1 if manoJugador[j].sumaCartas > 21 else 0   
+
+                  #Si las dos manos comparadas se pasan
+                  if cent == 2:
+                     bal = "+0"
+
+                  elif cent == 1:
+                     #Solo se pasa una mano --> Si es el Croupier   
+                     if manoCroupier[c].sumaCartas > 21:
+                        balanceTotal += manoJugador[j].apuesta
+                        bal = "+"f"{manoJugador[j].apuesta}"
+                     #Si es el jugador
+                     else:
+                        balanceTotal -= manoJugador[j].apuesta
+                        bal = "-"f"{manoJugador[j].apuesta}"
+
+                  #Aqui no se pasa ninguno. Se comparan entre ellos
+                  elif manoCroupier[c].sumaCartas > manoJugador[j].sumaCartas:
+                     balanceTotal -= manoJugador[j].apuesta
+                     bal = "-"f"{manoJugador[j].apuesta}"
+                  elif manoCroupier[c].sumaCartas < manoJugador[j].sumaCartas:  
+                     balanceTotal += manoJugador[j].apuesta
+                     bal = "+"f"{manoJugador[j].apuesta}"
+                  else:
+                     bal = "+0"
+   
+                  #El print de cada mano comparada
+                  print("* "+f"{manoCroupier[c].nombre}"+": "+f"{manoCroupier[c].sumaCartas}"+", "+f"{manoJugador[j].nombre}"+": "+f"{manoJugador[j].sumaCartas}"+" -> "f"{bal}")
+            
+            print("Resultado de la partida: "f"{balanceTotal}")
+
+            #Añadimos al Balance general
+            balance += balanceTotal
+           
+            #Solicitamos si quiere seguir jugando
+            if r == 'J':
+               #El juego ha acabado con BlackJack
+               while True:
+                  volverJugar = input("¿Otra partida? [S/N] ").upper()
+                  if volverJugar == 'S' or volverJugar == 'N':
+                     break
+               
+               if volverJugar == 'S':
+                  #Añadimos nueva partida
+                  game+=1
+                  gamesToPlay+=1
+
+               else:
+                  #Fin de las partidas
+                  print("\nBALANCE FINAL: "+f"{balance}"+" €")
+                  break
+            
+            else:
+               #Esta en modo Análisis, iniciamos nueva Partida
+               game+=1
 
 
    else:
