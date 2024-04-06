@@ -30,10 +30,8 @@ class Mano():
       self.nombre = nombre
       self.estado = 'Activa'
       self.apuesta = apuesta
-      self.valorCartas = self.getCardValues()   
-      self.sumaCartas = self.sumaTotal()
-      #Comprobamos el numero para modificar o no el estado (Modificaciones del profesor)
-      self.comprobarSuma()
+      #Actualizamos los datos de la mano
+      self.actualizarDatosMano()
 
    #Funcion que devuelve el valor de las cartas de la mano (de la clase Carta)
    def getCardValues(self):
@@ -61,8 +59,26 @@ class Mano():
       return n
    
    def comprobarSuma(self):
+      #Metodo para comprobar la suma de las cartas
       if self.estado == 'Activa' and self.sumaCartas>21:
          self.estado = 'PASADA'
+
+   def addCarta(self,cartaNueva):
+      #Metodo de añadir una Carta nueva (Pedir/Doblar)
+      self.datos.append(cartaNueva)
+
+   def doblarApuesta(self):
+      #Doblar apuesta al seleccionar (Doblar)
+      self.apuesta = self.apuesta*2
+      self.estado = 'Cerrada'
+
+   def actualizarDatosMano(self):
+      # Se ejecuta al crear la instancia de una mano para obtener la suma, su estado y el valor de las crtas
+      # Metodo ejecutado por las acciones donde hay modificaciones de estructuras
+      # Metodos --> Pedir, Doblar, Separar
+      self.valorCartas = self.getCardValues()  
+      self.sumaCartas = self.sumaTotal()
+      self.comprobarSuma()       
    
    #Impresion de cartas: Manejo con lista para cada linea (concatenacion de manos)
    #Damos Forma a las cartas
@@ -72,7 +88,7 @@ class Mano():
       self.nombreTrans = f"{self.nombre}"+":"      
       self.valorMano = f"({self.sumaCartas})"
       self.apuestaIcono = f"{self.apuesta}"+"€"
-      #Comprobacion del dato mas largo (para imprimirlo de manera deluxe)
+      #Comprobacion del dato mas largo (para imprimirlo de manera deluxe alineadamente)
       maxi = max(len(self.nombreTrans), len(self.estado), len(self.apuestaIcono))
       self.estado = self.estado.rjust(maxi)
       self.nombreTrans = self.nombreTrans.rjust(maxi)
@@ -106,6 +122,18 @@ class Mano():
       line3 = self.apuestaIcono+self.l3
       line4 = self.estado+self.l4
       return [line1,line2,line3,line4]
+
+def transMano(mano,impresion,name):
+   #Metodo para transformar la mano (Tipo Mano) a la lista con sublista para su impresion
+   impresion = []
+   if name == 'Croupier':
+      for m in mano:
+         impresion.append(m.imprimirCroupier())
+   else:
+      for m in mano:
+         impresion.append(m.imprimirJugador())      
+   return impresion
+
  
 def imprimirManos(listas):
     #Longitud de las manos (Debe ser 4)
@@ -116,6 +144,13 @@ def imprimirManos(listas):
             elementos.append(str(sublista[i]))
         #Cada elemento se separa con un " | "
         print(" │ ".join(elementos))
+
+def comprobarManosActivas(manos):
+   cent = 0
+   for mano in manos:
+      if mano.estado == 'Activa':
+         cent +=1
+   return cent      
 
 
 #Main
@@ -151,7 +186,7 @@ def main():
       while game<=gamesToPlay:
 
          #Numero de partida y pregunta de la apuesta
-         print(f"--- INICIO DE LA PARTIDA #{game} --- BALANCE = {balance} €")
+         print(f"\n--- INICIO DE LA PARTIDA #{game} --- BALANCE = {balance} €")
          apuestaStr= "[" + "] [".join(str(i) for i in tipoApuesta) + "]"
          msg = "¿Apuesta? " + apuestaStr + " "
 
@@ -169,7 +204,7 @@ def main():
                print(apIncorrecta)
          
          #Ya tenemos apuesta:
-         print("REPARTO INICIAL")
+         print("\nREPARTO INICIAL")
 
          #Se le genera una(s) mano(s) tanto al Croupier como al jugador
          #Inicialmente son 2 
@@ -202,13 +237,13 @@ def main():
                manoCroupier.append(Mano(element,nombre,apuesta))
 
 
-         #Usuario -->Si las manos iniciales son mas de 1, los nombres seran ManoA, ManoB ...
+         #Usuario --> Si las manos iniciales son mas de 1, los nombres seran ManoA, ManoB ...
          letter = 'A'
          centinela = 0
          cartasPorMano = 2
          nombre = 'Mano'
         
-         Jugador,manoJugador,imprimirJugador = [[],[]], [], []
+         Jugador,manoJugador,imprimirJugador = [[]], [], []
          #POSIBILIDAD DE CREAR UNA FUNCION PARA ESTO
          for i in range(len(Jugador)):
             for _ in range(cartasPorMano):
@@ -224,13 +259,9 @@ def main():
          #Aqui ya tenemos guardadas todas las manos en manoJugador y manoCroupier
          #Son de tipo Mano, lo que transformamos las manos en formato carta para su impresion
          
-
-         for mano in manoCroupier:
-            imprimirCroupier.append(mano.imprimirCroupier())
-
-         for mano in manoJugador:
-            imprimirJugador.append(mano.imprimirJugador())
-
+         imprimirCroupier = transMano(manoCroupier,imprimirCroupier,'Croupier')
+         imprimirJugador = transMano(manoJugador,imprimirJugador,'Jugador')
+        
          #Imprimimos las manos   
          imprimirManos(imprimirCroupier)
          imprimirManos(imprimirJugador)
@@ -261,35 +292,47 @@ def main():
             else:
                print("\nBALANCE FINAL: "+f"{balance}"+" €")
                break
-         
+
          else:
             #No hay BlackJack se continua con el juego
-            print("TURNO EL JUGADOR")
+            print("\nTURNO EL JUGADOR")
+            #Comprobamos las manos activas
+            manosActivas = comprobarManosActivas(manoJugador)
+            while manosActivas>0:
+               for i in range(len(manoJugador)):
+                  #Comprobamos si el estado de esa mano está activa
+                  if manoJugador[i].estado == 'Activa':
+                     #Usaremos una lista de acciones donde las que el usuario podra hacer
+                     jugada = "¿Jugada para la "+f"{manoJugador[i].nombre}"+"?"+" [P]edir [D]oblar [C]errar "
+                     acciones = ['P','D','C']
+                     #Comprobar si la jugada contiene 2 cartas iguales para la accion de separar
+                     if (len(manoJugador[i].valorCartas) == 2) and (manoJugador[i].valorCartas[0][0] == manoJugador[i].valorCartas[1][0]):
+                        acciones.append('S')
+                        jugada = jugada+str("[S]eparar ")
+                     accion = input(jugada).upper()
 
-            #HACER UN BUCLE HASTA QUE TODAS LAS MANOS SEAN DISTINTAS A ACTIVAS
-            for mJ in manoJugador:
-               #Comprobamos si el estado de esa mano está activa
-               if mJ.estado == 'Activa':
-                   #Usaremos una lista de acciones donde las que el usuario podra hacer
-                  jugada = "¿Jugada para la "+f"{mJ.nombre}"+"?"+" [P]edir [D]oblar [C]errar "
-                  acciones = ['P','D','C']
-                  #Comprobar si la jugada contiene 2 cartas iguales para la accion de separar
-                  if (len(mJ.valorCartas) == 2) and (mJ.valorCartas[0][0] == mJ.valorCartas[1][0]):
-                     acciones.append('S')
-                     jugada = jugada+str("[S]eparar ")
-               accion = input(jugada).upper()
+                     while True:
+                        if accion not in acciones:
+                           accion = input("Accion invalida. "+jugada).upper()
+                        else:
+                           break
 
-               while True:
-                  if accion not in acciones:
-                     accion = input("Accion invalida. "+jugada).upper()
-                  else:
-                     break
+                     #Accion seleccionada correctamente    
+                     #Accion de Cerrar:   
+                     if accion == 'C':
+                        manoJugador[i].estado = 'Cerrada'
+                     
+                     #Accion de Pedir
+                     if accion == 'P':
+                        manoJugador[i].addCarta(mazo.reparte())
+                        #Actualizamos sus datos mediante el metodo
+                        manoJugador[i].actualizarDatosMano()
 
-               #Accion seleccionada correctamente    
-               #Accion de Cerrar:   
-               if accion == 'C':
-                  mJ.estado == 'Cerrada'
-                  print(manoJugador[0].estado)
+
+                  #Imprimimos de nuevo las manos
+
+                  #Comprobamos las manos Activas de nuevo      
+                  manosActivas = comprobarManosActivas(manoJugador)
 
             #Break de cierre de programa 
             break
