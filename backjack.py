@@ -4,7 +4,10 @@
 
 from externo import CartaBase, Estrategia, Mazo
 
-#Creacion de clases/funciones para el programa
+#Creacion de clases/funciones/Variables para el programa
+palosCarta = ["♠","♣","♥","♦"]
+figurasPalo = ['A',2,3,4,5,6,7,8,9,10,'J','Q','K']
+numCartas = len(figurasPalo)
 
 class Carta(CartaBase):
    #Clase Carta --> Herencia de Carta Base
@@ -13,9 +16,9 @@ class Carta(CartaBase):
       super().valor
    
    def values(self):
-      numCartasPorPalo = 13
-      palos = ["♠","♣","♥","♦"]
-      figuras = ['A',2,3,4,5,6,7,8,9,10,'J','Q','K']
+      numCartasPorPalo = numCartas
+      palos = palosCarta
+      figuras = figurasPalo
       #Num --> Indice de la carta (A-K)
       num = str(figuras[self.ind%numCartasPorPalo])
       #Palo de la carta
@@ -200,18 +203,23 @@ def main():
          apuestaStr= "[" + "] [".join(str(i) for i in tipoApuesta) + "]"
          msg = "¿Apuesta? " + apuestaStr + " "
 
-         while True:
-            apIncorrecta = "Apuesta seleccionada incorrecta"
-            #Aqui selecciona la apuesta
-            apuesta = input(msg)
-            if apuesta.isdigit():
-               apuesta = int(apuesta)
-               if apuesta in tipoApuesta:
-                  break
+         if r == 'J':
+            while True:
+               apIncorrecta = "Apuesta seleccionada incorrecta"
+               #Aqui selecciona la apuesta
+               apuesta = input(msg)
+               if apuesta.isdigit():
+                  apuesta = int(apuesta)
+                  if apuesta in tipoApuesta:
+                     break
+                  else:
+                     print(apIncorrecta)
                else:
                   print(apIncorrecta)
-            else:
-               print(apIncorrecta)
+
+         elif r == 'A':
+            apuesta = estrategia.apuesta(tipoApuesta[0],tipoApuesta[1],tipoApuesta[2])
+            print(msg+str(apuesta))
          
          #Ya tenemos apuesta:
          print("\nREPARTO INICIAL")
@@ -278,6 +286,7 @@ def main():
          
          #Comprobacion de BlackJack
          gameEnd = False
+
          for manoJ in manoJugador:
             if manoJ.sumaCartas == 21:
                dinero = round(apuesta*(1.5))
@@ -290,18 +299,24 @@ def main():
 
          if gameEnd == True:
             #El juego ha acabado con BlackJack
-            while True:
-               volverJugar = input("¿Otra partida? [S/N] ").upper()
-               if volverJugar == 'S' or volverJugar == 'N':
-                  break
+            if r == 'J':
+               while True:
+                  volverJugar = input("¿Otra partida? [S/N] ").upper()
+                  if volverJugar == 'S' or volverJugar == 'N':
+                     break
+               if volverJugar == 'S':
+                  game+=1
+                  gamesToPlay+=1
+               else:
+                  print("\nBALANCE FINAL: "+f"{balance}"+" €")
+                  break      
             
-            if volverJugar == 'S':
-               game+=1
-               gamesToPlay+=1
-
-            else:
-               print("\nBALANCE FINAL: "+f"{balance}"+" €")
-               break
+            elif r == 'A':
+               if game<gamesToPlay:
+                  game +=1
+               else:
+                  print("\nBALANCE FINAL: "+f"{balance}"+" €")
+                  break   
 
          else:
             #No hay BlackJack se continua con el juego
@@ -321,14 +336,34 @@ def main():
                      if (len(manoJugador[i].valorCartas) == 2) and (manoJugador[i].valorCartas[0][0] == manoJugador[i].valorCartas[1][0]):
                         acciones.append('S')
                         jugada = jugada+str("[S]eparar ")
-                     accion = input(jugada).upper()
 
-                     while True:
-                        if accion not in acciones:
-                           accion = input("Accion invalida. "+jugada).upper()
-                        else:
-                           break
+                     if r == 'J':
+                        accion = input(jugada).upper()
+                        while True:
+                           if accion not in acciones:
+                              accion = input("Accion invalida. "+jugada).upper()
+                           else:
+                              break
 
+                     elif r == 'A':
+                        #Utilizaremos el metodo de estrategia. Necesitamos el valor de la carta del Coupier y lista del jugador 
+                        """Metodo solo válido para una carta inicial del Coupier"""
+                        #Carta del Cropier
+                        vc = Croupier[0][0]
+                        #Como mi mano va variando constantemente, transformaremos el tipo mano a los tipos cartas
+                        vj = []
+                        for card in manoJugador[i].valorCartas:
+                           indice = card[1]  #Indice -> (A-K)
+                           paloCart = card[2]       #Palo dela carta
+                           for fig in range(len(figurasPalo)):
+                              if str(indice) == str(figurasPalo[fig]):
+                                 break
+                           for pC in range(len(palosCarta)):
+                              if str(paloCart) == str(palosCarta[pC]):
+                                 c = Carta(fig+(13*pC))
+                                 vj.append(c)   
+                        accion = estrategia.jugada(vc,vj)
+                        print(jugada+accion)
                      #Accion seleccionada correctamente    
                      #Accion de Cerrar -> Estado a Cerrada:   
                      if accion == 'C':
@@ -344,7 +379,6 @@ def main():
                      if accion == 'D':
                         manoJugador[i].apuesta += manoJugador[i].apuesta
                         manoJugador[i].doblarApuesta()  
-
 
                      #Accion de Separar: Sabemos que son dos cartas con el mismo valor nominal
                      if accion == 'S':
@@ -374,10 +408,11 @@ def main():
             if centinela !=0:
                #Hay manos que no son pasadas
                print("\nTURNO DEL CROUPIER")
+               imprimirManos(imprimirCroupier)
                #Bucle donde se le otorga una carta hasta que su valor de la mano sea mayor o igual a 17
                for i in range(len(manoCroupier)):
                   suma = manoCroupier[i].sumaCartas
-                  while suma<=17:
+                  while suma<17:
                      manoCroupier[i].addCarta(mazo.reparte())
                      manoCroupier[i].actualizarDatosMano()
                      imprimirCroupier = transMano(manoCroupier,imprimirCroupier,'Croupier')
@@ -455,10 +490,15 @@ def main():
                   print("\nBALANCE FINAL: "+f"{balance}"+" €")
                   break
             
-            else:
+            elif r == 'A':
                #Esta en modo Análisis, iniciamos nueva Partida
-               game+=1
 
+               if game<gamesToPlay:
+                  game +=1
+
+               else:
+                  print("\nBALANCE FINAL: "+f"{balance}"+" €")
+                  break
 
    else:
       print("Modo de juego incorrecto")
