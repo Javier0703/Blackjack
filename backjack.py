@@ -103,7 +103,7 @@ class Mano():
       #Comprobacion del dato mas largo (para imprimirlo de manera deluxe alineadamente)
       maxi = max(len(self.nombreTrans), len(self.estado), len(self.apuestaIcono))
       self.estadoPrint = self.estado.rjust(maxi)
-      self.nombreTrans = self.nombreTrans.rjust(maxi)
+      self.nombreTrans = (self.nombreTrans).rjust(maxi)
       self.valorMano = self.valorMano.rjust(maxi)
       self.apuestaIcono = self.apuestaIcono.rjust(maxi)
       self.espaciado = " " * maxi
@@ -157,9 +157,21 @@ def comprobarManosActivas(manos):
          cent +=1
    return cent      
 
+def volverJugar(game,gamesToPlay,balance):
+   while True:
+      volverJugar = input("¿Otra partida? [S/N] ").upper()
+      if volverJugar == 'S' or volverJugar == 'N':
+         break       
+      if volverJugar == 'S':
+         #Añadimos nueva partida
+         game+=1
+         gamesToPlay+=1
+      else:
+         #Fin de las partidas
+         print("\nBALANCE FINAL: "+f"{balance}"+" €")
+         break
 
 #Main
-
 def main():
    #Modos de juego del BlackJack, inicializacion de variables: balance, tipos de apuesta...
    balance = 0
@@ -237,30 +249,23 @@ def main():
                   h.append(Mano(element,nombre,apuesta))
             return h
 
-
-         nombre = 'Croupier'
-         letter = 'A'
-         centinela = 0
-         cartasPorMano = 1
-
+         #Croupier (Si hay mas de dos manos seran CroupierA, CroupierB...)
+         nombre, letter = 'Croupier', 'A'
+         centinela, cartasPorMano = 0, 1
+         #Guardamos las cartas, las manos y el formato carta para su impreson respectivamente
          Croupier, manoCroupier,imprimirCroupier = [[]], [], []
          Croupier = anyadirCartas(Croupier,cartasPorMano)
          manoCroupier = createMano(Croupier,nombre,letter,centinela)
 
-
-         #Usuario --> Si las manos iniciales son mas de 1, los nombres seran ManoA, ManoB ...
-         nombre = 'Mano'
-         letter = 'A'
-         centinela = 0
-         cartasPorMano = 2
-        
+         #usuario (Si hay mas de dos manos seran ManoA, ManoB)
+         nombre, cartasPorMano = 'Mano', 2
+         #Guardamos las cartas, las manos y el formato carta para su impreson respectivamente
          Jugador,manoJugador,imprimirJugador = [[]], [], []
          Jugador = anyadirCartas(Jugador,cartasPorMano)
          manoJugador = createMano(Jugador,nombre,letter,centinela)
-         
+
          #Aqui ya tenemos guardadas todas las manos en manoJugador y manoCroupier
          #Son de tipo Mano, lo que transformamos las manos en formato carta para su impresion
-         
          imprimirCroupier = transMano(manoCroupier,imprimirCroupier,'Croupier')
          imprimirJugador = transMano(manoJugador,imprimirJugador,'Jugador')
         
@@ -269,8 +274,7 @@ def main():
          imprimirManos(imprimirJugador)
          
          #Comprobacion de BlackJack
-         gameEnd = False
-
+         blackJack = False
          for manoJ in manoJugador:
             if manoJ.sumaCartas == 21:
                dinero = round(apuesta*(1.5))
@@ -278,23 +282,13 @@ def main():
                print("*****************\n*** BLACKJACK ***\n*****************\n")
                print("Ha ganado "+ f"{dinero}"+ " €!")
                balance += dinero
-               gameEnd = True
+               blackJack = True
                break
 
-         if gameEnd == True:
+         if blackJack == True:
             #El juego ha acabado con BlackJack
             if r == 'J':
-               while True:
-                  volverJugar = input("¿Otra partida? [S/N] ").upper()
-                  if volverJugar == 'S' or volverJugar == 'N':
-                     break
-               if volverJugar == 'S':
-                  game+=1
-                  gamesToPlay+=1
-               else:
-                  print("\nBALANCE FINAL: "+f"{balance}"+" €")
-                  break      
-            
+               volverJugar(game,gamesToPlay,balance)      
             elif r == 'A':
                if game<gamesToPlay:
                   game +=1
@@ -451,7 +445,6 @@ def main():
    
                   #El print de cada mano comparada
                   print("* "+f"{manoCroupier[c].nombre}"+": "+f"{manoCroupier[c].sumaCartas}"+", "+f"{manoJugador[j].nombre}"+": "+f"{manoJugador[j].sumaCartas}"+" -> "f"{bal}")
-            
             print("Resultado de la partida: "f"{balanceTotal}")
 
             #Añadimos al Balance general
@@ -460,21 +453,7 @@ def main():
             #Solicitamos si quiere seguir jugando
             if r == 'J':
                #El juego ha acabado con BlackJack
-               while True:
-                  volverJugar = input("¿Otra partida? [S/N] ").upper()
-                  if volverJugar == 'S' or volverJugar == 'N':
-                     break
-               
-               if volverJugar == 'S':
-                  #Añadimos nueva partida
-                  game+=1
-                  gamesToPlay+=1
-
-               else:
-                  #Fin de las partidas
-                  print("\nBALANCE FINAL: "+f"{balance}"+" €")
-                  break
-            
+               volverJugar(game,gamesToPlay,balance)
             elif r == 'A':
                #Esta en modo Análisis, iniciamos nueva Partida
                if game<gamesToPlay:
@@ -482,11 +461,7 @@ def main():
                else:
                   print("\nBALANCE FINAL: "+f"{balance}"+" €\n")
                   break
-
    else:
       print("Modo de juego incorrecto")
- 
 if __name__ == "__main__":
     main()
-
-
