@@ -1,7 +1,4 @@
-"""Práctica creada por Javier Calvo Porro
-   Estudiante de PAR, 1º Ingeniería Informática, UVa, 2023,24
-"""
-
+"""Práctica creada por Javier Calvo Porro Estudiante de PAR, 1º Ingeniería Informática, UVa, 2023,24"""
 from externo import CartaBase, Estrategia, Mazo
 
 #Creacion de clases/funciones/Variables para el programa
@@ -96,18 +93,13 @@ class Mano():
    #Damos Forma a las cartas
    def formaCarta(self):
       
-      #Modificaciones para la el print posterior
-      self.nombreTrans = f"{self.nombre}"+":"      
-      self.valorMano = f"({self.sumaCartas})"
-      self.apuestaIcono = f"{self.apuesta}"+"€"
-      #Comprobacion del dato mas largo (para imprimirlo de manera deluxe alineadamente)
-      maxi = max(len(self.nombreTrans), len(self.estado), len(self.apuestaIcono))
+      #Comprobacion del dato mas largo para la alineacion de datos
+      maxi = max(len(f"{self.nombre}"+":"), len(self.estado), len(f"{self.apuesta}"+"€"))
       self.estadoPrint = self.estado.rjust(maxi)
-      self.nombreTrans = (self.nombreTrans).rjust(maxi)
-      self.valorMano = self.valorMano.rjust(maxi)
-      self.apuestaIcono = self.apuestaIcono.rjust(maxi)
+      self.nombreTrans = (f"{self.nombre}"+":").rjust(maxi)
+      self.valorMano = (f"({self.sumaCartas})").rjust(maxi)
+      self.apuestaIcono = (f"{self.apuesta}"+"€").rjust(maxi)
       self.espaciado = " " * maxi
-
       #Aqui damos la forma a la propia carta (o cartas)
       numCartas = len(self.valorCartas)
       self.l1 = "╭───╮" * numCartas
@@ -159,17 +151,16 @@ def comprobarManosActivas(manos):
 
 def volverJugar(game,gamesToPlay,balance):
    while True:
-      volverJugar = input("¿Otra partida? [S/N] ").upper()
-      if volverJugar == 'S' or volverJugar == 'N':
-         break       
-      if volverJugar == 'S':
-         #Añadimos nueva partida
-         game+=1
-         gamesToPlay+=1
-      else:
-         #Fin de las partidas
-         print("\nBALANCE FINAL: "+f"{balance}"+" €")
-         break
+    volver_jugar = input("¿Otra partida? [S/N] ").upper()
+    if volver_jugar in ['S', 'N']:
+        if volver_jugar == 'S':
+            game += 1
+            gamesToPlay += 1
+        else:
+            # Fin de las partidas
+            print("\nBALANCE FINAL: " + f"{balance}" + " €")
+        break
+   return volver_jugar
 
 #Main
 def main():
@@ -288,7 +279,8 @@ def main():
          if blackJack == True:
             #El juego ha acabado con BlackJack
             if r == 'J':
-               volverJugar(game,gamesToPlay,balance)      
+               if volverJugar(game,gamesToPlay,balance) == 'N':
+                  break   
             elif r == 'A':
                if game<gamesToPlay:
                   game +=1
@@ -453,7 +445,8 @@ def main():
             #Solicitamos si quiere seguir jugando
             if r == 'J':
                #El juego ha acabado con BlackJack
-               volverJugar(game,gamesToPlay,balance)
+               if volverJugar(game,gamesToPlay,balance) == 'N':
+                  break
             elif r == 'A':
                #Esta en modo Análisis, iniciamos nueva Partida
                if game<gamesToPlay:
