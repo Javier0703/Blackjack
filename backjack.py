@@ -79,9 +79,8 @@ class Mano():
       self.estado = 'Cerrada'
 
    def actualizarDatosMano(self):
-      # Se ejecuta al crear la instancia de una mano para obtener la suma, su estado y el valor de las crtas
-      # Metodo ejecutado por las acciones donde hay modificaciones de estructuras
-      # Metodos --> Pedir, Doblar, Separar
+      # Se ejecuta al crear la instancia de una mano para obtener la suma, su estado y el valor de las cartas
+      # Metodo ejecutado por las acciones donde hay modificaciones de estructuras. Metodos --> Pedir, Doblar, Separar
       self.valorCartas = self.getCardValues()  
       self.sumaCartas = self.sumaTotal()
       self.comprobarSuma()       
@@ -118,23 +117,16 @@ class Mano():
          self.l3 += "│" + f"{self.valorCartas[i][2]}  " + "│"
       self.l4 = "╰───╯" * numCartas
 
+   #Devuelve una lista con cad auna de las lineas de la carta (Son 4)
    #Cartas Coupier
    def imprimirCroupier(self):
       self.formaCarta()
-      line1 = self.nombreTrans+self.l1 
-      line2 = self.valorMano+self.l2
-      line3 = self.estadoPrint+self.l3
-      line4 = self.espaciado+self.l4
-      return [line1,line2,line3,line4]
+      return [self.nombreTrans+self.l1 ,self.valorMano+self.l2,self.estadoPrint+self.l3,self.espaciado+self.l4]
 
    #Cartas Jugador
    def imprimirJugador(self):
       self.formaCarta()
-      line1 = self.nombreTrans+self.l1 
-      line2 = self.valorMano+self.l2
-      line3 = self.apuestaIcono+self.l3
-      line4 = self.estadoPrint+self.l4
-      return [line1,line2,line3,line4]
+      return [self.nombreTrans+self.l1 ,self.valorMano+self.l2, self.apuestaIcono+self.l3,self.estadoPrint+self.l4]
 
 def transMano(mano,impresion,name):
    #Metodo para transformar la mano (Tipo Mano) a la lista con sublista para su impresion
@@ -226,54 +218,46 @@ def main():
 
          #Se le genera una(s) mano(s) tanto al Croupier como al jugador
          #Inicialmente son 2 
-         """
-         La metodología empleada es la siguiente:
-            - cartasPorMano : Numero de cartas por cada mano
-            - Copier/Jugador: Lista con las diferentes manos iniciales 
-            (supuesto caso que se pidan jugar con 2 o lo que sea)
-            - manoCroupier, manoJugador : Lista con objetos tipo Mano, para su utilizacion
-            Bucle donde se almacenan las cartas en las manos
-         """
-
          #Croupier --> Si las manos iniciales son mas de 1, el nombre es CropierA, CroupierB...
+
+         def anyadirCartas(mano,numCartas):
+            for i in range(len(mano)):
+               for _ in range(numCartas):
+                  mano[i].append(mazo.reparte())
+            return mano
+         
+         def createMano(mano,nombre,letter,centinela):
+            h = []
+            for element in mano:
+               if len(mano)>1:
+                  tmpName = nombre+str(chr(ord(letter) + centinela))
+                  centinela+=1
+                  h.append(Mano(element,tmpName,apuesta))
+               else:   
+                  h.append(Mano(element,nombre,apuesta))
+            return h
+
+
          nombre = 'Croupier'
          letter = 'A'
          centinela = 0
          cartasPorMano = 1
 
          Croupier, manoCroupier,imprimirCroupier = [[]], [], []
-         #POSIBILIDAD DE CREAR UNA FUNCION PARA ESTO
-         for i in range(len(Croupier)):
-            for _ in range(cartasPorMano):
-               Croupier[i].append(mazo.reparte())
-         for element in Croupier:
-            if len(Croupier)>1:
-               tmpName = nombre+str(chr(ord(letter) + centinela))
-               centinela+=1
-               manoCroupier.append(Mano(element,tmpName,apuesta))
-            else:   
-               manoCroupier.append(Mano(element,nombre,apuesta))
+         Croupier = anyadirCartas(Croupier,cartasPorMano)
+         manoCroupier = createMano(Croupier,nombre,letter,centinela)
 
 
          #Usuario --> Si las manos iniciales son mas de 1, los nombres seran ManoA, ManoB ...
+         nombre = 'Mano'
          letter = 'A'
          centinela = 0
          cartasPorMano = 2
-         nombre = 'Mano'
         
          Jugador,manoJugador,imprimirJugador = [[]], [], []
-         #POSIBILIDAD DE CREAR UNA FUNCION PARA ESTO
-         for i in range(len(Jugador)):
-            for _ in range(cartasPorMano):
-               Jugador[i].append(mazo.reparte())
-         for element in Jugador:
-            if len(Jugador)>1:
-               tmpName = nombre+str(chr(ord(letter) + centinela))
-               centinela+=1
-               manoJugador.append(Mano(element,tmpName,apuesta))
-            else:   
-               manoJugador.append(Mano(element,nombre,apuesta))
-
+         Jugador = anyadirCartas(Jugador,cartasPorMano)
+         manoJugador = createMano(Jugador,nombre,letter,centinela)
+         
          #Aqui ya tenemos guardadas todas las manos en manoJugador y manoCroupier
          #Son de tipo Mano, lo que transformamos las manos en formato carta para su impresion
          
@@ -364,6 +348,7 @@ def main():
                                  vj.append(c)   
                         accion = estrategia.jugada(vc,vj)
                         print(jugada+accion)
+
                      #Accion seleccionada correctamente    
                      #Accion de Cerrar -> Estado a Cerrada:   
                      if accion == 'C':
@@ -409,7 +394,7 @@ def main():
                #Hay manos que no son pasadas
                print("\nTURNO DEL CROUPIER")
                imprimirManos(imprimirCroupier)
-               #Bucle donde se le otorga una carta hasta que su valor de la mano sea mayor o igual a 17
+               #Bucle donde se le otorga una carta hasta que su valor de la mano sea mayor o igual a 17 (Funcional si tiene mas de 1 mano)
                for i in range(len(manoCroupier)):
                   suma = manoCroupier[i].sumaCartas
                   while suma<17:
@@ -492,17 +477,16 @@ def main():
             
             elif r == 'A':
                #Esta en modo Análisis, iniciamos nueva Partida
-
                if game<gamesToPlay:
                   game +=1
-
                else:
-                  print("\nBALANCE FINAL: "+f"{balance}"+" €")
+                  print("\nBALANCE FINAL: "+f"{balance}"+" €\n")
                   break
 
    else:
       print("Modo de juego incorrecto")
  
-main()
+if __name__ == "__main__":
+    main()
 
 
