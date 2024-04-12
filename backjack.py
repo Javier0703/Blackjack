@@ -13,20 +13,17 @@ class Carta(CartaBase):
       super().valor
    
    def values(self):
-      numCartasPorPalo = numCartas
-      palos = palosCarta
-      figuras = figurasPalo
       #Num --> Indice de la carta (A-K)
-      num = str(figuras[self.ind%numCartasPorPalo])
+      num = str(figurasPalo[self.ind%numCartas])
       #Palo de la carta
-      palo = palos[self.ind//len(figuras)]
+      palo = palosCarta[self.ind//len(figurasPalo)]
       #Lista con los detalles de la carta [Valor, Indice, Palo]
       return [self.valor,num,palo]
 
 class Mano():
    def __init__(self,datos,nombre,apuesta):
       #Datos necesarios de la mano: Cartas para el manejo de ellas
-      self.datos = datos
+      self.datos = datos      
       self.nombre = nombre
       self.estado = 'Activa'
       self.apuesta = apuesta
@@ -36,7 +33,7 @@ class Mano():
    #Funcion que devuelve el valor de las cartas de la mano (de la clase Carta)
    def getCardValues(self):
       cartasPorMano = []
-      for dato in self.datos:
+      for dato in self.datos:  
          cartasPorMano.append(dato.values())      
       return cartasPorMano
    
@@ -296,6 +293,7 @@ def main():
             manosActivas = comprobarManosActivas(manoJugador)
 
             while manosActivas>0:
+
                for i in range(len(manoJugador)):
                   #Comprobamos si el estado de esa mano está activa
                   if manoJugador[i].estado == 'Activa':
@@ -331,7 +329,8 @@ def main():
                            for pC in range(len(palosCarta)):
                               if str(paloCart) == str(palosCarta[pC]):
                                  c = Carta(fig+(13*pC))
-                                 vj.append(c)   
+                                 vj.append(c) 
+                                   
                         accion = estrategia.jugada(vc,vj)
                         print(jugada+accion)
 
@@ -409,12 +408,10 @@ def main():
                for j in range(len(manoJugador)):
                   cent = 0
                   cent +=1 if manoCroupier[c].sumaCartas > 21 else 0
-                  cent +=1 if manoJugador[j].sumaCartas > 21 else 0   
-
+                  cent +=1 if manoJugador[j].sumaCartas > 21 else 0
                   #Si las dos manos comparadas se pasan
                   if cent == 2:
                      bal = "+0"
-
                   elif cent == 1:
                      #Solo se pasa una mano --> Si es el Croupier   
                      if manoCroupier[c].sumaCartas > 21:
@@ -424,7 +421,6 @@ def main():
                      else:
                         balanceTotal -= manoJugador[j].apuesta
                         bal = "-"f"{manoJugador[j].apuesta}"
-
                   #Aqui no se pasa ninguno. Se comparan entre ellos
                   elif manoCroupier[c].sumaCartas > manoJugador[j].sumaCartas:
                      balanceTotal -= manoJugador[j].apuesta
@@ -434,14 +430,12 @@ def main():
                      bal = "+"f"{manoJugador[j].apuesta}"
                   else:
                      bal = "+0"
-   
                   #El print de cada mano comparada
                   print("* "+f"{manoCroupier[c].nombre}"+": "+f"{manoCroupier[c].sumaCartas}"+", "+f"{manoJugador[j].nombre}"+": "+f"{manoJugador[j].sumaCartas}"+" -> "f"{bal}")
             print("Resultado de la partida: "f"{balanceTotal}")
 
             #Añadimos al Balance general
             balance += balanceTotal
-           
             #Solicitamos si quiere seguir jugando
             if r == 'J':
                #El juego ha acabado con BlackJack
@@ -457,4 +451,4 @@ def main():
    else:
       print("Modo de juego incorrecto")
 if __name__ == "__main__":
-    main()
+   main()
