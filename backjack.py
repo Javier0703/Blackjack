@@ -320,18 +320,7 @@ def main():
                         """Metodo solo válido para una carta inicial del Coupier"""
                         #Carta del Cropier
                         vc = Croupier[0][0]
-                        #Como mi mano va variando constantemente, transformaremos el tipo mano a los tipos cartas
-                        vj = []
-                        for card in manoJugador[i].valorCartas:
-                           indice = card[1]  #Indice -> (A-K)
-                           paloCart = card[2]       #Palo dela carta
-                           for fig in range(len(figurasPalo)):
-                              if str(indice) == str(figurasPalo[fig]):
-                                 break
-                           for pC in range(len(palosCarta)):
-                              if str(paloCart) == str(palosCarta[pC]):
-                                 c = Carta(fig+(13*pC))
-                                 vj.append(c)   
+                        vj = Jugador[i]
                         accion = estrategia.jugada(vc,vj)
                         print(jugada+accion)
 
@@ -342,7 +331,9 @@ def main():
                       
                      #Accion de Pedir o Doblar (Añadimos una carta)
                      if accion == 'P' or accion == 'D':
-                        manoJugador[i].addCarta(mazo.reparte())
+                        #Añadimos la carta al Jugador
+                        Jugador[i].append(mazo.reparte())
+                        manoJugador[i].datos = Jugador[i]
                         #Actualizamos sus datos mediante el metodo
                         manoJugador[i].actualizarDatosMano()
 
@@ -355,11 +346,13 @@ def main():
                      if accion == 'S':
                         #Seleccionamos el nombe y la carta para introducirla
                         name = manoJugador[i].nombre
-                        carta = [manoJugador[i].datos.pop()]
+                        carta = [Jugador[i].pop()]
                         #Modificamos el nombre de nuestra mano actual y actualizamos sus datos
                         manoJugador[i].nombre = name+str('A')
+                        manoJugador[i].datos = Jugador[i]
                         manoJugador[i].actualizarDatosMano()
                         #Creamos una mano nueva y la actualizamos
+                        Jugador.append(carta)
                         manoJugador.append(Mano(carta,(name+str('B')),manoJugador[i].apuesta))
                         manoJugador[-1].actualizarDatosMano()
 
