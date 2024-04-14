@@ -294,7 +294,6 @@ def main():
 
             #Comprobamos las manos activas
             manosActivas = comprobarManosActivas(manoJugador)
-
             while manosActivas>0:
                for i in range(len(manoJugador)):
                   #Comprobamos si el estado de esa mano está activa
@@ -318,7 +317,7 @@ def main():
                      elif r == 'A':
                         #Utilizaremos el metodo de estrategia. Necesitamos el valor de la carta del Coupier y lista del jugador 
                         """Metodo solo válido para una carta inicial del Coupier"""
-                        #Carta del Cropier
+                        #Carta del Cropier y lista de cartas del Jugador
                         vc = Croupier[0][0]
                         vj = Jugador[i]
                         accion = estrategia.jugada(vc,vj)
@@ -374,19 +373,17 @@ def main():
                print("\nTURNO DEL CROUPIER")
                imprimirManos(imprimirCroupier)
                #Bucle donde se le otorga una carta hasta que su valor de la mano sea mayor o igual a 17 (Funcional si tiene mas de 1 mano)
-               for i in range(len(manoCroupier)):
-                  suma = manoCroupier[i].sumaCartas
+               for mC in manoCroupier:
+                  suma = mC.sumaCartas
                   while suma<17:
-                     manoCroupier[i].addCarta(mazo.reparte())
-                     manoCroupier[i].actualizarDatosMano()
-                     imprimirCroupier = transMano(manoCroupier,imprimirCroupier,'Croupier')
-                     imprimirManos(imprimirCroupier)
-                     suma = manoCroupier[i].sumaCartas
+                     mC.addCarta(mazo.reparte())   #Añadimos una carta
+                     mC.actualizarDatosMano()      #Actualizamos los datos de la Mano
+                     imprimirManos(transMano(manoCroupier,imprimirCroupier,'Croupier'))   #Imprimimos
+                     suma = mC.sumaCartas       #Comparamos la suma
                      if suma<=21 and suma>=17:
-                        manoCroupier[i].estado = 'Cerrada'
+                        mC.estado = 'Cerrada'
                      if suma>21:
-                        manoCroupier[i].estado = 'PASADA'
-               
+                        mC.estado = 'PASADA'
                imprimirCroupier = transMano(manoCroupier,imprimirCroupier,'Croupier')
 
             #Aqui ha finalizado el Juego. --> Imprimimos los datos finales      
