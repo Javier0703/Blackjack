@@ -5,6 +5,7 @@ from externo import CartaBase, Estrategia, Mazo
 palosCarta = ["♠","♣","♥","♦"]
 figurasPalo = ['A',2,3,4,5,6,7,8,9,10,'J','Q','K']
 numCartas = len(figurasPalo)
+maxValue, maxValueCroupier = 21, 17
 
 class Carta(CartaBase):
    #Clase Carta --> Herencia de Carta Base
@@ -42,14 +43,13 @@ class Mano():
    
    #Funcion que devuelve el valor de la mano completa y
    def sumaTotal(self):
-      maxValue = 21
       card = 'A'
       val = 10
       cartaAS = False
       n = 0
       for carta in self.valorCartas:   #Sumamos el valor de la carta
          n += carta[0]
-         if carta[1] == card:          #Comprobamos si la carta es un AS
+         if carta[1] == card: 
             cartaAS = True
       #Comprobamos si es mejor opcion sumar 11 en vez de 1
       if n <=(maxValue-val) and cartaAS == True:
@@ -58,9 +58,9 @@ class Mano():
    
    def comprobarSuma(self):   #Metodo para comprobar la suma de las cartas
       if self.estado == 'Activa':
-         if self.sumaCartas > 21:
+         if self.sumaCartas > maxValue:
             self.estado = 'PASADA'
-         if self.sumaCartas == 21:
+         if self.sumaCartas == maxValue:
             self.estado = 'Cerrada'   
 
    def addCarta(self,cartaNueva):   #Metodo de añadir una Carta nueva (Croupier)
@@ -76,7 +76,7 @@ class Mano():
       self.comprobarSuma()       
    
    def doblarApuesta(self):   #Metodo ejecutado cuando se dobla una apuesta
-      if self.sumaCartas >21:
+      if self.sumaCartas >maxValue:
          self.estado = 'PASADA'
       else:
          self.estado = 'Cerrada'
@@ -253,7 +253,7 @@ def main():
          #Comprobacion de BlackJack
          blackJack = False
          for manoJ in manoJugador:
-            if manoJ.sumaCartas == 21:
+            if manoJ.sumaCartas == maxValue:
                dinero = round(apuesta*(1.5))
                #Se realiza BlackJack
                print("*****************\n*** BLACKJACK ***\n*****************\n")
@@ -361,14 +361,14 @@ def main():
                #Bucle donde se le otorga una carta hasta que su valor de la mano sea mayor o igual a 17 (Funcional si tiene mas de 1 mano)
                for mC in manoCroupier:
                   suma = mC.sumaCartas
-                  while suma<17:
+                  while suma<maxValueCroupier:
                      mC.addCarta(mazo.reparte())         #Añadimos una carta
                      mC.actualizarDatosMano()            #Actualizamos los datos de la Mano
                      imprimirManos(transMano(manoCroupier,imprimirCroupier,'Croupier'))   #Imprimimos
                      suma = mC.sumaCartas                #Comparamos la suma
-                     if suma<=21 and suma>=17:
+                     if suma<=maxValue and suma>=maxValueCroupier:
                         mC.estado = 'Cerrada'
-                     if suma>21:
+                     if suma>maxValue:
                         mC.estado = 'PASADA'
                imprimirCroupier = transMano(manoCroupier,imprimirCroupier,'Croupier')
 
@@ -384,34 +384,23 @@ def main():
 
             for c in range(len(manoCroupier)):
                for j in range(len(manoJugador)):
-                  cent = 0
-                  cent +=1 if manoCroupier[c].sumaCartas > 21 else 0
-                  cent +=1 if manoJugador[j].sumaCartas > 21 else 0   
-
-                  #Si las dos manos comparadas se pasan
-                  if cent == 2:
+                  vC, vJ = manoCroupier[c].sumaCartas,  manoJugador[j].sumaCartas
+                  if (vC > maxValue and vJ > maxValue) or (vC == vJ):      #Son iguales o ambos son mayor que 21 (+0)
                      bal = "+0"
-
-                  elif cent == 1:
-                     #Solo se pasa una mano --> Si es el Croupier   
-                     if manoCroupier[c].sumaCartas > 21:
+                  else:
+                     if vC > maxValue:                #Se pasa el Croupier         
                         balanceTotal += manoJugador[j].apuesta
                         bal = "+"f"{manoJugador[j].apuesta}"
-                     #Si es el jugador
-                     else:
+                     elif vJ > maxValue:              #Se pasa el Jugador o es menor que el
                         balanceTotal -= manoJugador[j].apuesta
                         bal = "-"f"{manoJugador[j].apuesta}"
-
-                  #Aqui no se pasa ninguno. Se comparan entre ellos
-                  elif manoCroupier[c].sumaCartas > manoJugador[j].sumaCartas:
-                     balanceTotal -= manoJugador[j].apuesta
-                     bal = "-"f"{manoJugador[j].apuesta}"
-                  elif manoCroupier[c].sumaCartas < manoJugador[j].sumaCartas:  
-                     balanceTotal += manoJugador[j].apuesta
-                     bal = "+"f"{manoJugador[j].apuesta}"
-                  else:
-                     bal = "+0"
-   
+                     else:
+                        if vC > vJ:
+                           balanceTotal -= manoJugador[j].apuesta
+                           bal = "-"f"{manoJugador[j].apuesta}"
+                        else:
+                           balanceTotal += manoJugador[j].apuesta
+                           bal = "+"f"{manoJugador[j].apuesta}"
                   #El print de cada mano comparada
                   print("* "+f"{manoCroupier[c].nombre}"+": "+f"{manoCroupier[c].sumaCartas}"+", "+f"{manoJugador[j].nombre}"+": "+f"{manoJugador[j].sumaCartas}"+" -> "f"{bal}")
             print("Resultado de la partida: "f"{balanceTotal}")
