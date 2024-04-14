@@ -381,33 +381,30 @@ def main():
             #Contabilizacion de las manos
             print("\nCONTABILIZACION DE RESULTADOS")
             balanceTotal = 0
-
             for c in range(len(manoCroupier)):
                for j in range(len(manoJugador)):
                   vC, vJ = manoCroupier[c].sumaCartas,  manoJugador[j].sumaCartas
-                  if (vC > maxValue and vJ > maxValue) or (vC == vJ):      #Son iguales o ambos son mayor que 21 (+0)
-                     bal = "+0"
-                  else:
-                     if vC > maxValue:                #Se pasa el Croupier         
-                        balanceTotal += manoJugador[j].apuesta
-                        bal = "+"f"{manoJugador[j].apuesta}"
-                     elif vJ > maxValue:              #Se pasa el Jugador o es menor que el
-                        balanceTotal -= manoJugador[j].apuesta
-                        bal = "-"f"{manoJugador[j].apuesta}"
-                     else:
-                        if vC > vJ:
-                           balanceTotal -= manoJugador[j].apuesta
-                           bal = "-"f"{manoJugador[j].apuesta}"
-                        else:
-                           balanceTotal += manoJugador[j].apuesta
-                           bal = "+"f"{manoJugador[j].apuesta}"
+                  if (vC > maxValue and vJ > maxValue) or (vC == vJ):
+                     bal = "+0"  # Son iguales o ambos son mayores que 21
+                  elif vC > maxValue:  # Se pasa el Croupier
+                     balanceTotal += manoJugador[j].apuesta
+                     bal = f"+{manoJugador[j].apuesta}"
+                  elif vJ > maxValue:  # Se pasa el Jugador 
+                     balanceTotal -= manoJugador[j].apuesta
+                     bal = f"-{manoJugador[j].apuesta}"
+                  elif vC > vJ:  # El Croupier gana
+                     balanceTotal -= manoJugador[j].apuesta
+                     bal = f"-{manoJugador[j].apuesta}"
+                  else:  # El Jugador gana
+                     balanceTotal += manoJugador[j].apuesta
+                     bal = f"+{manoJugador[j].apuesta}"
+
                   #El print de cada mano comparada
                   print("* "+f"{manoCroupier[c].nombre}"+": "+f"{manoCroupier[c].sumaCartas}"+", "+f"{manoJugador[j].nombre}"+": "+f"{manoJugador[j].sumaCartas}"+" -> "f"{bal}")
             print("Resultado de la partida: "f"{balanceTotal}")
 
             #Añadimos al Balance general
             balance += balanceTotal
-           
             #Solicitamos si quiere seguir jugando
             if r == 'J':
                #El juego ha acabado con BlackJack
