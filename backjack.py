@@ -47,43 +47,35 @@ class Mano():
       val = 10
       cartaAS = False
       n = 0
-      for carta in self.valorCartas:
-         #Sumamos el valor de la carta
+      for carta in self.valorCartas:   #Sumamos el valor de la carta
          n += carta[0]
-         #Comprobamos si la carta es un AS
-         if carta[1] == card:
+         if carta[1] == card:          #Comprobamos si la carta es un AS
             cartaAS = True
       #Comprobamos si es mejor opcion sumar 11 en vez de 1
       if n <=(maxValue-val) and cartaAS == True:
          n += val
       return n
    
-   def comprobarSuma(self):
-      #Metodo para comprobar la suma de las cartas
+   def comprobarSuma(self):   #Metodo para comprobar la suma de las cartas
       if self.estado == 'Activa':
          if self.sumaCartas > 21:
             self.estado = 'PASADA'
          if self.sumaCartas == 21:
             self.estado = 'Cerrada'   
 
-   def addCarta(self,cartaNueva):
-      #Metodo de añadir una Carta nueva (Pedir/Doblar)
+   def addCarta(self,cartaNueva):   #Metodo de añadir una Carta nueva (Croupier)
       self.datos.append(cartaNueva)
 
-   def doblarApuesta(self):
-      #Doblar apuesta al seleccionar (Doblar)
+   def doblarApuesta(self):   #Doblar apuesta al seleccionar (Doblar)
       self.apuesta = self.apuesta*2
       self.estado = 'Cerrada'
 
-   def actualizarDatosMano(self):
-      # Se ejecuta al crear la instancia de una mano para obtener la suma, su estado y el valor de las cartas
-      # Metodo ejecutado por las acciones donde hay modificaciones de estructuras. Metodos --> Pedir, Doblar, Separar
+   def actualizarDatosMano(self):   # Se ejecuta al crear la instancia. Metodo ejecutado por las acciones: Pedir, Doblar, Separar
       self.valorCartas = self.getCardValues()  
       self.sumaCartas = self.sumaTotal()
       self.comprobarSuma()       
    
-   def doblarApuesta(self):
-      #Metodo ejecutado cuando se dobla una apuesta
+   def doblarApuesta(self):   #Metodo ejecutado cuando se dobla una apuesta
       if self.sumaCartas >21:
          self.estado = 'PASADA'
       else:
@@ -92,7 +84,6 @@ class Mano():
    #Impresion de cartas: Manejo con lista para cada linea (concatenacion de manos)
    #Damos Forma a las cartas
    def formaCarta(self):
-      
       #Comprobacion del dato mas largo para la alineacion de datos
       maxi = max(len(f"{self.nombre}"+":"), len(self.estado), len(f"{self.apuesta}"+"€"))
       self.estadoPrint = self.estado.rjust(maxi)
@@ -186,13 +177,11 @@ def main():
                print("Por favor, ingresa un número entero válido.")
    
       #Inicio del Juego
-               
       #Creacion de la estrategia y del mazo a usar
       estrategia = Estrategia(Mazo.NUM_BARAJAS)
       mazo = Mazo(Carta, estrategia)
 
       while game<=gamesToPlay:
-
          #Numero de partida y pregunta de la apuesta
          print(f"\n--- INICIO DE LA PARTIDA #{game} --- BALANCE = {balance} €")
          apuestaStr= "[" + "] [".join(str(i) for i in tipoApuesta) + "]"
@@ -218,11 +207,8 @@ def main():
          
          #Ya tenemos apuesta:
          print("\nREPARTO INICIAL")
-
-         #Se le genera una(s) mano(s) tanto al Croupier como al jugador
-         #Inicialmente son 2 
-         #Croupier --> Si las manos iniciales son mas de 1, el nombre es CropierA, CroupierB...
-
+         #Se le genera una(s) mano(s) tanto al Croupier como al jugador . Inicialmente son una para cada uno
+         #Funciones para añadir una carta y generar las distintas manos
          def anyadirCartas(mano,numCartas):
             for i in range(len(mano)):
                for _ in range(numCartas):
@@ -243,14 +229,14 @@ def main():
          #Croupier (Si hay mas de dos manos seran CroupierA, CroupierB...)
          nombre, letter = 'Croupier', 'A'
          centinela, cartasPorMano = 0, 1
-         #Guardamos las cartas, las manos y el formato carta para su impreson respectivamente
+         #Guardamos las cartas (Type Carta), las manos (Type Mano) y el formato carta para su impreson respectivamente
          Croupier, manoCroupier,imprimirCroupier = [[]], [], []
          Croupier = anyadirCartas(Croupier,cartasPorMano)
          manoCroupier = createMano(Croupier,nombre,letter,centinela)
 
          #usuario (Si hay mas de dos manos seran ManoA, ManoB)
          nombre, cartasPorMano = 'Mano', 2
-         #Guardamos las cartas, las manos y el formato carta para su impreson respectivamente
+         #Guardamos las cartas (Type Carta), las manos (Type Mano) y el formato carta para su impreson respectivamente
          Jugador,manoJugador,imprimirJugador = [[]], [], []
          Jugador = anyadirCartas(Jugador,cartasPorMano)
          manoJugador = createMano(Jugador,nombre,letter,centinela)
@@ -376,10 +362,10 @@ def main():
                for mC in manoCroupier:
                   suma = mC.sumaCartas
                   while suma<17:
-                     mC.addCarta(mazo.reparte())   #Añadimos una carta
-                     mC.actualizarDatosMano()      #Actualizamos los datos de la Mano
+                     mC.addCarta(mazo.reparte())         #Añadimos una carta
+                     mC.actualizarDatosMano()            #Actualizamos los datos de la Mano
                      imprimirManos(transMano(manoCroupier,imprimirCroupier,'Croupier'))   #Imprimimos
-                     suma = mC.sumaCartas       #Comparamos la suma
+                     suma = mC.sumaCartas                #Comparamos la suma
                      if suma<=21 and suma>=17:
                         mC.estado = 'Cerrada'
                      if suma>21:
@@ -394,7 +380,8 @@ def main():
 
             #Contabilizacion de las manos
             print("\nCONTABILIZACION DE RESULTADOS")
-            balanceTotal = 0 
+            balanceTotal = 0
+
             for c in range(len(manoCroupier)):
                for j in range(len(manoJugador)):
                   cent = 0
