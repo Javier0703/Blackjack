@@ -6,6 +6,7 @@ palosCarta = ["♠","♣","♥","♦"]
 figurasPalo = ['A',2,3,4,5,6,7,8,9,10,'J','Q','K']
 numCartas = len(figurasPalo)
 maxValue, maxValueCroupier = 21, 17
+nombres = ['Mano','Croupier']
 
 class Carta(CartaBase):
    #Clase Carta --> Herencia de Carta Base
@@ -85,7 +86,10 @@ class Mano():
    #Damos Forma a las cartas
    def formaCarta(self):
       #Comprobacion del dato mas largo para la alineacion de datos
-      maxi = max(len(f"{self.nombre}"+":"), len(self.estado), len(f"{self.apuesta}"+"€"))
+      if nombres[0] in self.nombre:
+         maxi = max(len(f"{self.nombre}"+":"), len(self.estado), len(f"{self.apuesta}"+"€"))
+      else:
+         maxi = max(len(f"{self.nombre}"+":"), len(self.estado))
       self.estadoPrint = self.estado.rjust(maxi)
       self.nombreTrans = (f"{self.nombre}"+":").rjust(maxi)
       self.valorMano = (f"({self.sumaCartas})").rjust(maxi)
@@ -227,15 +231,17 @@ def main():
             return h
 
          #Croupier (Si hay mas de dos manos seran CroupierA, CroupierB...)
-         nombre, letter = 'Croupier', 'A'
-         centinela, cartasPorMano = 0, 1
-         #Guardamos las cartas (Type Carta), las manos (Type Mano) y el formato carta para su impreson respectivamente
+         nombre, letter = nombres[1], 'A'
+         centinela = 0
+         cartasPorMano = 1
+         #Croupier -> Type Carta, mano ->Type Mano y el formato carta para su impreson respectivamente
          Croupier, manoCroupier,imprimirCroupier = [[]], [], []
          Croupier = anyadirCartas(Croupier,cartasPorMano)
          manoCroupier = createMano(Croupier,nombre,letter,centinela)
 
          #usuario (Si hay mas de dos manos seran ManoA, ManoB)
-         nombre, cartasPorMano = 'Mano', 2
+         nombre = nombres[0]
+         cartasPorMano =  2
          #Guardamos las cartas (Type Carta), las manos (Type Mano) y el formato carta para su impreson respectivamente
          Jugador,manoJugador,imprimirJugador = [[]], [], []
          Jugador = anyadirCartas(Jugador,cartasPorMano)
@@ -277,7 +283,6 @@ def main():
          else:
             #No hay BlackJack se continua con el juego
             print("\nTURNO EL JUGADOR")
-
             #Comprobamos las manos activas
             manosActivas = comprobarManosActivas(manoJugador)
             while manosActivas>0:
@@ -381,26 +386,25 @@ def main():
             #Contabilizacion de las manos
             print("\nCONTABILIZACION DE RESULTADOS")
             balanceTotal = 0
-            for c in range(len(manoCroupier)):
-               for j in range(len(manoJugador)):
-                  vC, vJ = manoCroupier[c].sumaCartas,  manoJugador[j].sumaCartas
+            for manC in manoCroupier:
+               for manJ in manoJugador:
+                  vC, vJ, apu = manC.sumaCartas,  manJ.sumaCartas, manJ.apuesta
                   if (vC > maxValue and vJ > maxValue) or (vC == vJ):
                      bal = "+0"  # Son iguales o ambos son mayores que 21
                   elif vC > maxValue:  # Se pasa el Croupier
-                     balanceTotal += manoJugador[j].apuesta
-                     bal = f"+{manoJugador[j].apuesta}"
+                     balanceTotal += apu
+                     bal = f"+{apu}"
                   elif vJ > maxValue:  # Se pasa el Jugador 
-                     balanceTotal -= manoJugador[j].apuesta
-                     bal = f"-{manoJugador[j].apuesta}"
+                     balanceTotal -= apu
+                     bal = f"-{apu}"
                   elif vC > vJ:  # El Croupier gana
-                     balanceTotal -= manoJugador[j].apuesta
-                     bal = f"-{manoJugador[j].apuesta}"
+                     balanceTotal -= apu
+                     bal = f"-{apu}"
                   else:  # El Jugador gana
-                     balanceTotal += manoJugador[j].apuesta
-                     bal = f"+{manoJugador[j].apuesta}"
-
+                     balanceTotal += apu
+                     bal = f"+{apu}"
                   #El print de cada mano comparada
-                  print("* "+f"{manoCroupier[c].nombre}"+": "+f"{manoCroupier[c].sumaCartas}"+", "+f"{manoJugador[j].nombre}"+": "+f"{manoJugador[j].sumaCartas}"+" -> "f"{bal}")
+                  print("* "+f"{manC.nombre}"+": "+f"{vC}"+", "+f"{manJ.nombre}"+": "+f"{vJ}"+" -> "f"{bal}")
             print("Resultado de la partida: "f"{balanceTotal}")
 
             #Añadimos al Balance general
