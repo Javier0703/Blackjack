@@ -2,18 +2,28 @@
     Código externo para la primera práctica
     Versión utilizada en el enunciado
     (c) César Vaca
-"""
 
+    Atención: En este código se usan type hints para ayudar a documentar el código, pero
+    vosotros no estais obligados a usarlo
+"""
 import random
+
+
 class CartaBase(object):
-    #Carta base (El as devuelve 1 siempre (validar a la hora de la suma))
+    """ Clase minimalista que representa una carta de la baraja
+        Debería crearse una clase que herede de esta
+    """
     def __init__(self, ind):
-        #Valor debe ser entre 0, 51 (Hay 52 cartas)
+        """ Crea la carta con ese índice (0-51)
+        :param ind: El índice de la carta
+        """
         self.ind = ind
 
     @property
     def valor(self):
-        #Valor de la carta. Devuelve 1 el AS
+        """
+        :return: Valor facial de la carta (1-10). Los ases devuelven 1.
+        """
         return min(10, self.ind % 13 + 1)
 
 
@@ -21,28 +31,23 @@ class Estrategia(object):
     """ Clase que representa una estrategia de juego para el Blackjack
         Basada en el libro que muestra Alan en Resacón en las Vegas
     """
-
     # Matrices de estrategia: Filas suma de valores de cartas del jugador (ases = 1), columnas valor carta del croupier
-
     # Matriz para jugadas con 2 cartas del mismo valor (inicio fila 2)
     MATD = ['S' * 10, *['P' + 'S' * 6 + 'PPP'] * 2, 'P' * 4 + 'SS' + 'P' * 4, 'P' + 'D' * 8 + 'P',
             'P' + 'S' * 6 + 'PPP', 'P' + 'S' * 7 + 'PP', 'S' * 10, 'C' + 'S' * 5 + 'CSSC', 'C' * 10]
-    
     # Matriz para jugadas con algún as (inicio fila 3, suma debe dividirse por 2)
     MATA = [*['P' * 4 + 'DD' + 'P' * 4] * 2, *['PPPDDD' + 'P' * 4] * 2, 'PP' + 'D' * 4 + 'P' * 4,
             'PC' + 'D' * 4 + 'CCPP', *['C' * 10] * 3]
-    
     # Matriz para jugadas sin ases ni duplicados (inicio fila 4)
     MATN = [*['P' * 10] * 5, 'P' + 'D' * 5 + 'P' * 4, 'P' + 'D' * 8 + 'P', 'D' * 10,
             'P' * 3 + 'C' * 3 + 'P' * 4, *['P' + 'C' * 5 + 'P' * 4] * 4, *['C' * 10] * 5]
-    
     # Vector de estrategia de conteo
     CONT = [-2, 2, 2, 2, 3, 2, 1, 0, -1, -2]
 
     def __init__(self, num_barajas):
         """ Crea e inicializa la estrategia
-        :param num_barajas: Número de barajas del mazo utilizado en el juego"""
-        #Minimo son las 2 que se pide al iniciar la practica
+        :param num_barajas: Número de barajas del mazo utilizado en el juego
+        """
         self.num_barajas = num_barajas
         self.num_cartas = 0
         self.cuenta = 0
@@ -62,7 +67,6 @@ class Estrategia(object):
     def apuesta(self, apu_lo, apu_med, apu_hi):
         """ Indica la apuesta que se debe realizar dado el estado del juego.
             Elige entre 3 valores posibles (baja, media y alta)
-            
         :param apu_lo: El valor de la apuesta baja
         :param apu_med: El valor de la apuesta media
         :param apu_hi: El valor de la apuesta alta
@@ -94,8 +98,8 @@ class Estrategia(object):
 
 
 class Mazo(object):
-    """ Clase que representa un mazo de cartas"""
-
+    """ Clase que representa un mazo de cartas
+    """
     NUM_BARAJAS = 2
     SEMILLA = 260
 
@@ -120,11 +124,7 @@ class Mazo(object):
             random.shuffle(inds)
             self.cartas = [self.clase(i) for i in inds]
         c = self.cartas.pop()
-
         if self.estrategia is not None:
             # Se informa a la estrategia de la carta que se reparte
             self.estrategia.cuenta_carta(c)
         return c
-    
-    def cards (self):
-        return self.cartas

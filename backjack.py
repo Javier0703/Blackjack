@@ -60,9 +60,7 @@ class Mano():
    def comprobarSuma(self):   #Metodo para comprobar la suma de las cartas
       if self.estado == 'Activa':
          if self.sumaCartas > maxValue:
-            self.estado = 'PASADA'
-         if self.sumaCartas == maxValue:
-            self.estado = 'Cerrada'   
+            self.estado = 'PASADA' 
 
    def addCarta(self,cartaNueva):   #Metodo de añadir una Carta nueva (Croupier)
       self.datos.append(cartaNueva)
@@ -125,7 +123,6 @@ def transMano(mano,impresion,name):
       for m in mano:
          impresion.append(m.imprimirJugador())      
    return impresion
-
  
 def imprimirManos(listas):
     #Longitud de las manos (Debe ser 4)
@@ -256,6 +253,12 @@ def main():
          imprimirManos(imprimirCroupier)
          imprimirManos(imprimirJugador)
          
+         #Funciones
+         def modifMano(manoJugador,name,Jugador):
+            manoJugador[i].nombre = name+str('A')
+            manoJugador[i].datos = Jugador[i]
+            manoJugador[i].actualizarDatosMano()
+
          #Comprobacion de BlackJack
          blackJack = False
          for manoJ in manoJugador:
@@ -326,7 +329,7 @@ def main():
                         manoJugador[i].datos = Jugador[i]
                         #Actualizamos sus datos mediante el metodo
                         manoJugador[i].actualizarDatosMano()
-
+         
                      #Accion de Doblar  -> Doblamos apuesta
                      if accion == 'D':
                         manoJugador[i].apuesta += manoJugador[i].apuesta
@@ -338,13 +341,10 @@ def main():
                         name = manoJugador[i].nombre
                         carta = [Jugador[i].pop()]
                         #Modificamos el nombre de nuestra mano actual y actualizamos sus datos
-                        manoJugador[i].nombre = name+str('A')
-                        manoJugador[i].datos = Jugador[i]
-                        manoJugador[i].actualizarDatosMano()
+                        modifMano(manoJugador,name,Jugador)
                         #Creamos una mano nueva y la actualizamos
                         Jugador.append(carta)
                         manoJugador.append(Mano(carta,(name+str('B')),manoJugador[i].apuesta))
-                        manoJugador[-1].actualizarDatosMano()
 
                print(" ")
                #Imprimimos de nuevo las manos
